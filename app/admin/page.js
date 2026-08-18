@@ -1,4 +1,5 @@
 import { supabaseAdmin } from '../../lib/supabase';
+import { requireAdmin } from '../../lib/guard';
 import { SECTIONS, NPS, LABELS } from '../../lib/survey';
 
 export const dynamic = 'force-dynamic';
@@ -6,6 +7,7 @@ const overallIds = SECTIONS.map((s) => s.overall.id);
 const fmt1 = (x) => (x || x === 0) ? Number(x).toFixed(1) : '—';
 
 export default async function Dashboard({ searchParams }) {
+  requireAdmin();
   const sb = supabaseAdmin();
   const { data: clubs } = await sb.from('clubs').select('id, ten_club').order('ma_club');
   const today = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Ho_Chi_Minh' }).format(new Date());

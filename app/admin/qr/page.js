@@ -1,10 +1,12 @@
 import { headers } from 'next/headers';
 import QRCode from 'qrcode';
 import { supabaseAdmin } from '../../../lib/supabase';
+import { requireAdmin } from '../../../lib/guard';
 
 export const dynamic = 'force-dynamic';
 
 export default async function QrPage() {
+  requireAdmin();
   const sb = supabaseAdmin();
   const { data: clubs } = await sb.from('clubs').select('id, ma_club, ten_club, qr_khaosat').order('ma_club');
   const h = headers();
