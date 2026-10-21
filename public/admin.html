@@ -1,0 +1,253 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>TNG Quiz – Quản trị</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/styles.css">
+<link rel="stylesheet" href="/admin.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="wrap topbar-in">
+    <a class="brand" href="/"><img src="/logo.png" alt="The New Gym"><span class="brand-t"><b>Quản trị Quiz</b><small>Câu hỏi · Nhân viên · Kết quả · Cài đặt</small></span></a>
+    <nav class="nav" id="adminNav" hidden>
+      <button data-tab="questions" class="active"><svg class="i"><use href="/icons.svg#list"/></svg>Câu hỏi</button>
+      <button data-tab="users"><svg class="i"><use href="/icons.svg#users"/></svg>Nhân viên</button>
+      <button data-tab="results"><svg class="i"><use href="/icons.svg#list"/></svg>Kết quả</button>
+      <button data-tab="board"><svg class="i"><use href="/icons.svg#award"/></svg>Xếp hạng</button>
+      <button data-tab="docs"><svg class="i"><use href="/icons.svg#book"/></svg>Tài liệu</button>
+      <button data-tab="settings"><svg class="i"><use href="/icons.svg#target"/></svg>Cài đặt</button>
+      <a href="/" title="Về trang làm bài"><svg class="i"><use href="/icons.svg#left"/></svg>Trang làm bài</a>
+      <button id="logout"><svg class="i"><use href="/icons.svg#logout"/></svg>Thoát</button>
+    </nav>
+    <a class="admin-btn" href="/" id="backHome"><svg class="i sm"><use href="/icons.svg#left"/></svg>Về trang làm bài</a>
+  </div>
+</header>
+<main class="wrap">
+  <section id="loginView" class="admin-login">
+    <div class="card">
+      <span class="ico o" style="width:48px;height:48px"><svg class="i lg"><use href="/icons.svg#lock"/></svg></span>
+      <h1 style="margin:14px 0 6px">Đăng nhập quản trị</h1>
+      <p class="muted">Dành cho người quản lý ngân hàng câu hỏi và tài khoản nhân viên.</p>
+      <form id="loginForm" class="form" style="margin-top:18px">
+        <label>Mật khẩu quản trị<input type="password" name="pw" required autocomplete="current-password" placeholder="Nhập mật khẩu ADMIN_PASSWORD"></label>
+        <div id="loginMsg" class="msg" hidden></div>
+        <button class="btn primary big block">Đăng nhập<svg class="i"><use href="/icons.svg#right"/></svg></button>
+      </form>
+      <details class="small muted" style="margin-top:14px">
+        <summary style="cursor:pointer">Quên mật khẩu?</summary>
+        <p style="margin:8px 0 0">Người quản lý dự án trên Vercel mở <b>Settings → Environment Variables</b> để xem hoặc đổi mật khẩu quản trị, sau đó <b>Redeploy</b>.</p>
+      </details>
+    </div>
+  </section>
+
+  <section id="helpView" hidden>
+    <details class="card help" style="margin-bottom:16px">
+      <summary style="cursor:pointer"><h3 style="display:inline-flex;margin:0"><svg class="i"><use href="/icons.svg#info"/></svg> Hướng dẫn mật khẩu quản trị</h3></summary>
+      <p class="muted small" style="margin:12px 0 12px">Trang quản trị không có tài khoản riêng. Mật khẩu chính là giá trị của biến <code>ADMIN_PASSWORD</code> đặt trên Vercel:</p>
+      <ol>
+        <li>Vào <b>vercel.com</b> → chọn project <b>tngquiz</b></li>
+        <li>Mở <b>Settings → Environment Variables</b></li>
+        <li>Sửa <code>ADMIN_PASSWORD</code> (hoặc bấm <b>Add</b> nếu chưa có) → nhập mật khẩu mới → <b>Save</b></li>
+        <li>Vào <b>Deployments → ⋯ → Redeploy</b></li>
+        <li>Đăng nhập lại bằng mật khẩu mới</li>
+      </ol>
+    </details>
+  </section>
+
+  <section id="tab-questions" hidden>
+    <div class="board-head">
+      <div><h1>Ngân hàng câu hỏi</h1><p class="muted" id="qSummary"></p></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn ghost" id="bulkQ">Nhập hàng loạt</button><button class="btn primary" id="addQ">+ Thêm câu hỏi</button></div>
+    </div>
+    <div class="card">
+      <div class="filters">
+        <input id="qSearch" placeholder="Tìm theo nội dung, nguồn…">
+        <select id="qSet"><option value="">Tất cả bộ câu hỏi</option></select>
+        <select id="qTopic"><option value="">Tất cả chủ đề</option></select>
+        <select id="qStatus"><option value="">Tất cả trạng thái</option><option value="on">Đang dùng</option><option value="off">Đã tắt</option><option value="edited">Đã chỉnh sửa</option><option value="custom">Câu thêm mới</option><option value="easy">Câu dễ</option><option value="hard">Câu khó</option></select>
+      </div>
+      <div id="qList"></div>
+    </div>
+  </section>
+
+  <section id="tab-users" hidden>
+    <div class="board-head"><div><h1>Nhân viên</h1><p class="muted" id="uSummary"></p></div>
+      <input id="uSearch" placeholder="Tìm tên…" style="max-width:260px"></div>
+    <div class="card"><div class="table-wrap"><table class="tbl"><thead><tr><th>Họ tên</th><th>Phòng ban</th><th>Ngày vào làm</th><th>Hôm nay</th><th class="r">Thao tác</th></tr></thead><tbody id="uRows"></tbody></table></div>
+      <p class="empty" id="uEmpty" hidden>Chưa có nhân viên nào đăng nhập.</p></div>
+  </section>
+
+  <section id="tab-results" hidden>
+    <div class="board-head"><div><h1>Kết quả làm bài</h1><p class="muted" id="rSummary"></p></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+        <input type="date" id="rDate" style="width:auto">
+        <button class="btn danger" id="rDel" disabled>Xóa kết quả đã chọn</button>
+      </div></div>
+    <div class="card"><div class="table-wrap"><table class="tbl"><thead><tr><th style="width:36px"><input type="checkbox" id="rAll" title="Chọn tất cả"></th><th>#</th><th>Họ tên</th><th>Phòng ban</th><th>Đúng</th><th>Điểm</th><th>Thời gian</th><th>Nộp lúc</th></tr></thead><tbody id="rRows"></tbody></table></div>
+      <p class="empty" id="rEmpty" hidden>Không có kết quả nào trong ngày này.</p>
+      <p class="muted small" style="margin-top:10px">Xóa kết quả của <b>hôm nay</b>: nhân viên đăng nhập lại là làm lại được bài của ngày hôm nay. Dòng đã ghi vào Google Sheets vẫn giữ nguyên.</p></div>
+  </section>
+
+  <section id="tab-board" hidden>
+    <div class="board-head"><div><h1>Bảng xếp hạng</h1><p class="muted" id="abLabel"></p></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+        <div class="tabs" id="abPeriod"><button data-p="day" class="active">Ngày</button><button data-p="week">Tuần</button><button data-p="month">Tháng</button></div>
+        <input type="date" id="abDate" style="width:auto">
+        <a class="btn ghost" href="/#board" target="_blank">Mở trang công khai</a>
+      </div></div>
+    <div class="stats" id="abStats"></div>
+    <div class="ab-grid">
+      <div class="card"><div class="card-h"><h2>Xếp hạng cá nhân</h2><div class="tabs" id="abDept"></div></div>
+        <div class="table-wrap"><table class="tbl"><thead><tr><th>#</th><th>Nhân viên</th><th>Phòng ban</th><th class="r">Số ngày</th><th class="r">Đúng</th><th class="r">Điểm</th><th class="r">Thời gian</th></tr></thead><tbody id="abRows"></tbody></table></div>
+        <p class="empty" id="abEmpty" hidden>Chưa có ai làm bài trong khoảng thời gian này.</p></div>
+      <div style="display:grid;gap:18px;align-content:start">
+        <div class="card"><div class="card-h"><h2>Theo phòng ban</h2><span class="muted small">Điểm TB</span></div><div id="abDeptBars" class="bars"></div></div>
+        <div class="card"><div class="card-h"><h2>Câu sai nhiều nhất</h2></div><ol id="abWrong" class="ab-wrong"></ol></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="tab-docs" hidden>
+    <div class="board-head"><div><h1>Tài liệu</h1><p class="muted">Văn bản dùng để trích dẫn đáp án và tra cứu ở trang Tài liệu.</p></div>
+      <a class="btn ghost" href="/docs.html" target="_blank">Mở trang Tài liệu</a></div>
+    <div class="ab-grid">
+      <div class="card">
+        <div class="card-h"><h2>Danh sách văn bản</h2></div>
+        <div id="dList"></div>
+      </div>
+      <form class="card form" id="dForm">
+        <h2 style="margin:0 0 4px">Thêm tài liệu mới</h2>
+        <p class="muted small" style="margin:0 0 8px">Hỗ trợ file <b>PDF có chữ</b> (không phải ảnh scan), <b>Word .docx</b> hoặc <b>.txt</b>. Hệ thống tự tách Chương / Điều / Mục để trích dẫn.</p>
+        <label>Chọn file<input type="file" name="file" accept=".pdf,.docx,.txt" required></label>
+        <label>Tên tài liệu<input name="title" required maxlength="160" placeholder="VD: QĐ 270/2026/QĐ-TND – Quy trình bán hàng"></label>
+        <div class="two"><label>Mã trích dẫn<input name="refKey" required maxlength="60" placeholder="VD: QĐ 270"></label>
+        <label>Nhóm<input name="group" list="dGroups" maxlength="60" placeholder="VD: Quy định nội bộ"></label></div><datalist id="dGroups"></datalist>
+        <p class="muted small" style="margin:0">Mã trích dẫn là cụm ngắn, duy nhất, phải xuất hiện trong ô "Nguồn" của câu hỏi để đáp án dẫn đúng về tài liệu này.</p>
+        <p class="small" id="dPreview"></p>
+        <div id="dMsg" class="msg" hidden></div>
+        <button class="btn primary big block" id="dSave">Đọc file và lưu tài liệu</button>
+      </form>
+    </div>
+  </section>
+
+  <section id="tab-settings" hidden>
+    <div class="board-head"><div><h1>Cài đặt đề thi</h1><p class="muted" id="sSummary"></p></div></div>
+    <form id="sForm" class="set-grid">
+      <div class="card">
+        <h3>Đề thi</h3>
+        <label>Số câu mỗi đề<input type="number" name="quizSize" min="5" max="100" required></label>
+        <p class="muted small" id="sQHint"></p>
+        <label style="margin-top:12px">Thời gian làm bài (phút)<input type="number" name="minutes" min="5" max="180" required></label>
+        <label style="margin-top:12px">Tỷ lệ câu khó trong mỗi đề (%)<input type="number" name="hardPct" min="0" max="100" required></label>
+        <p class="muted small" id="sHardHint"></p>
+        <p class="muted small">Hết giờ hệ thống tự nộp bài. Thay đổi áp dụng cho <b>lượt làm bài bắt đầu sau khi lưu</b>; người đang làm dở giữ nguyên đề và thời gian cũ.</p>
+      </div>
+      <div class="card">
+        <h3>Phòng ban</h3>
+        <div id="sDepts" class="dept-list"></div>
+        <div style="display:flex;gap:8px;margin-top:10px"><input id="sNewDept" placeholder="Tên phòng ban mới" maxlength="40"><button type="button" class="btn ghost" id="sAddDept">+ Thêm</button></div>
+        <p class="muted small" style="margin-top:8px">Phòng ban bị gỡ sẽ không còn hiện ở màn hình đăng nhập làm bài. Kết quả cũ của phòng ban đó vẫn được giữ trên bảng xếp hạng.</p>
+      </div>
+      <div class="card" style="grid-column:1/-1">
+        <h3>Bộ câu hỏi dùng khi phát đề</h3>
+        <p class="muted small" style="margin:-6px 0 12px">Bật bộ nào thì đề lấy câu từ bộ đó. Ô <b>Số câu cố định</b>: để 0 thì câu được trộn ngẫu nhiên giữa các bộ đang bật; ghi số (VD: 5) thì mỗi đề luôn có đúng số câu đó từ bộ này.</p>
+        <div class="table-wrap"><table class="tbl"><thead><tr><th>Bật</th><th>Tên bộ câu hỏi</th><th class="r">Số câu hiện có</th><th class="r">Trong đó câu khó</th><th class="r">Số câu cố định</th><th></th></tr></thead><tbody id="sSets"></tbody></table></div>
+        <div style="display:flex;gap:8px;margin-top:10px"><input id="sNewSet" placeholder="Tên bộ câu hỏi mới (VD: Quy trình bán hàng)" maxlength="60"><button type="button" class="btn ghost" id="sAddSet">+ Tạo bộ</button></div>
+      </div>
+      <div class="set-actions"><div id="sMsg" class="msg" hidden></div><button class="btn primary big">Lưu cài đặt</button></div>
+    </form>
+    <div class="card" style="margin-top:16px">
+      <h3>Chỉnh sửa điểm số</h3>
+      <p class="muted small" style="margin:-6px 0 12px">Chọn ngày, nhập lại <b>số câu đúng</b> rồi bấm Lưu. Điểm (%) tự tính lại; bảng xếp hạng ngày/tuần/tháng cập nhật ngay. Dòng đã ghi vào Google Sheets không thay đổi.</p>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px"><label style="margin:0">Ngày <input type="date" id="eDate"></label><input id="eSearch" placeholder="Tìm tên nhân viên" style="max-width:240px"></div>
+      <div class="add-score" style="border:1px dashed var(--line,#d6dde5);border-radius:10px;padding:12px;margin-bottom:12px">
+        <b>+ Thêm điểm</b> <span class="muted small">(cho nhân viên chưa làm bài trong ngày đã chọn)</span>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end;margin-top:8px">
+          <label style="margin:0">Nhân viên<select id="aUser" style="min-width:220px"></select></label>
+          <label style="margin:0">Số câu đúng<input type="number" id="aCorrect" min="0" style="width:90px"></label>
+          <label style="margin:0">Tổng số câu<input type="number" id="aTotal" min="1" max="200" style="width:90px"></label>
+          <label style="margin:0">Thời gian (phút)<input type="number" id="aMin" min="0" max="180" value="0" style="width:80px"></label>
+          <label style="margin:0">Giây<input type="number" id="aSec" min="0" max="59" value="0" style="width:70px"></label>
+          <button type="button" class="btn primary sm" id="aAdd">Thêm điểm</button>
+        </div>
+      </div>
+      <div class="table-wrap"><table class="tbl"><thead><tr><th>Nhân viên</th><th>Phòng ban</th><th class="r">Hiện tại</th><th>Số câu đúng mới</th><th></th></tr></thead><tbody id="eRows"></tbody></table></div>
+      <p class="empty" id="eEmpty" hidden>Không có kết quả nào trong ngày này.</p>
+    </div>
+    <div class="card" style="margin-top:16px">
+      <h3>Bộ đề cho nhân viên</h3>
+      <p class="muted small" style="margin:-6px 0 12px">Chọn nhân viên, chọn câu hỏi và khoảng ngày áp dụng. Trong thời gian đó nhân viên được chọn làm đúng bộ câu này (thứ tự câu và đáp án vẫn đảo); điểm ghi nhận như bình thường. Ngoài thời gian áp dụng hoặc khi tắt, nhân viên làm đề ngẫu nhiên như thường. Thay đổi áp dụng cho lượt làm bài bắt đầu sau khi lưu.</p>
+      <div id="gList"></div>
+      <button type="button" class="btn ghost" id="gNew" style="margin-top:8px">+ Tạo bộ đề</button>
+      <div id="gForm" hidden style="border:1px dashed var(--line,#d6dde5);border-radius:10px;padding:12px;margin-top:12px">
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end">
+          <label style="margin:0;flex:1;min-width:200px">Tên bộ đề<input id="gName" maxlength="80" placeholder="VD: Nhân viên mới – 20 câu dễ"></label>
+          <label style="margin:0">Từ ngày<input type="date" id="gFrom"></label>
+          <label style="margin:0">Đến ngày<input type="date" id="gTo"></label>
+        </div>
+        <div class="two" style="margin-top:12px">
+          <div>
+            <b>Nhân viên</b> <span class="muted small" id="gUCount"></span>
+            <div style="display:flex;gap:6px;margin:6px 0"><input id="gUSearch" placeholder="Tìm tên / phòng ban"><button type="button" class="btn ghost sm" id="gUAll">Chọn tất cả đang lọc</button><button type="button" class="btn ghost sm" id="gUNone">Bỏ chọn</button></div>
+            <div id="gUsers" style="max-height:300px;overflow:auto;border:1px solid var(--line,#e3e8ee);border-radius:8px;padding:6px"></div>
+          </div>
+          <div>
+            <b>Câu hỏi</b> <span class="muted small" id="gQCount"></span>
+            <div style="display:flex;gap:6px;margin:6px 0;flex-wrap:wrap"><input id="gQSearch" placeholder="Tìm nội dung" style="flex:1;min-width:140px"><select id="gQSet"></select><select id="gQLv"><option value="">Mọi độ khó</option><option value="de">Dễ</option><option value="kho">Khó</option></select></div>
+            <div style="display:flex;gap:6px;margin-bottom:6px;align-items:center;flex-wrap:wrap"><span class="small">Chọn ngẫu nhiên</span><input type="number" id="gRandN" value="20" min="1" max="100" style="width:70px"><span class="small">câu từ danh sách đang lọc</span><button type="button" class="btn ghost sm" id="gRand">Chọn</button><button type="button" class="btn ghost sm" id="gQNone">Bỏ chọn hết</button><label class="small" style="margin:0"><input type="checkbox" id="gQOnly"> Chỉ hiện câu đã chọn</label></div>
+            <div id="gQs" style="max-height:300px;overflow:auto;border:1px solid var(--line,#e3e8ee);border-radius:8px;padding:6px"></div>
+          </div>
+        </div>
+        <div id="gMsg" class="msg" hidden style="margin-top:8px"></div>
+        <div class="modal-act"><button type="button" class="btn ghost" id="gCancel">Hủy</button><button type="button" class="btn primary" id="gSave">Lưu bộ đề</button></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<div class="modal" id="qModal" hidden><div class="modal-box wide">
+  <h3 id="qmTitle">Thêm câu hỏi</h3>
+  <form id="qForm" class="form">
+    <div class="two"><label>Bộ câu hỏi<select name="set" class="setSel" required></select></label>
+    <label>Chủ đề<input name="topic" list="topicList" required></label></div><datalist id="topicList"></datalist>
+    <label>Độ khó<select name="lv"><option value="de">Dễ – hỏi trực tiếp, phương án sai khác biệt rõ</option><option value="kho">Khó – đánh đố, các phương án gần giống nhau</option></select></label>
+    <div class="two"><label>Văn bản nguồn<select name="doc" class="docSel"><option value="">— Chọn văn bản —</option></select></label>
+    <label>Điều / khoản<input name="art" placeholder="VD: Chương 4, Điều 10 hoặc Điều 5"></label></div>
+    <label>Nguồn hiển thị (tự điền từ 2 ô trên, có thể sửa)<input name="ref" placeholder="VD: QĐ 272/2026/QĐ-TND – Bộ quy định khối Club · Chương 4, Điều 10"></label>
+    <label>Câu hỏi<textarea name="q" rows="3" required></textarea></label>
+    <label class="ok-l">✓ Đáp án đúng<input name="o0" required></label>
+    <label>✗ Phương án sai 1<input name="o1" required></label>
+    <label>✗ Phương án sai 2<input name="o2" required></label>
+    <label>✗ Phương án sai 3<input name="o3" required></label>
+    <p class="small muted">Lưu ý: dùng đúng từ ngữ trong văn bản gốc, không thêm bớt. Hệ thống tự xáo trộn thứ tự phương án khi phát đề.</p>
+    <div id="qmMsg" class="msg" hidden></div>
+    <div class="modal-act"><button type="button" class="btn ghost" id="qmCancel">Hủy</button><button class="btn primary">Lưu</button></div>
+  </form>
+</div></div>
+<div class="modal" id="bModal" hidden><div class="modal-box wide">
+  <h3>Nhập câu hỏi hàng loạt</h3>
+  <form id="bForm" class="form">
+    <div class="two"><label>Đưa vào bộ câu hỏi<select name="set" class="setSel" required></select></label>
+    <label>Văn bản nguồn (áp cho các dòng không ghi nguồn)<select name="doc" class="docSel"><option value="">— Không chọn —</option></select></label></div>
+    <div class="tpl-bar"><label class="btn ghost sm" style="margin:0">📂 Chọn file Excel / CSV đã soạn<input type="file" id="bFile" accept=".xlsx,.xls,.csv" hidden></label><button type="button" class="btn ghost sm" id="bTpl">⬇ Tải form mẫu</button><span class="muted small" id="bFileName"></span></div>
+    <label>Danh sách câu hỏi – mỗi câu 1 dòng, các cột cách nhau bằng dấu <b>|</b>
+      <textarea name="text" rows="10" placeholder="Chủ đề | Điều/khoản | Câu hỏi | Đáp án ĐÚNG | Sai 1 | Sai 2 | Sai 3 | Độ khó&#10;Lương thưởng MS | Điều 3 | Mức lương cố định của MS là bao nhiêu? | 5.500.000 đồng/tháng | 6.500.000 đồng/tháng | 4.000.000 đồng/tháng | 5.000.000 đồng/tháng | Dễ"></textarea></label>
+    <p class="small muted">Có thể dán trực tiếp từ Excel/Google Sheets (các cột cách nhau bằng Tab cũng được). Cột "Điều/khoản" có thể để trống hoặc ghi nguồn đầy đủ. Cột 8 "Độ khó" ghi <b>Dễ</b> hoặc <b>Khó</b> (để trống = Dễ). Đáp án đúng luôn ở cột thứ 4, hệ thống tự xáo trộn khi phát đề.</p>
+    <p class="small" id="bPreview"></p>
+    <div id="bMsg" class="msg" hidden style="white-space:pre-line"></div>
+    <div class="modal-act"><button type="button" class="btn ghost" id="bCancel">Hủy</button><button class="btn primary">Nhập vào ngân hàng</button></div>
+  </form>
+</div></div>
+<div class="modal" id="modal" hidden><div class="modal-box"><h3 id="mTitle"></h3><p id="mText" class="muted"></p><div class="modal-act"><button class="btn ghost" id="mNo">Quay lại</button><button class="btn primary" id="mYes">Đồng ý</button></div></div></div>
+<div class="toast" id="toast" hidden></div>
+<script src="/docs-lib.js"></script>
+<script src="/docs-build.js"></script>
+<script src="/admin.js"></script>
+</body>
+</html>
